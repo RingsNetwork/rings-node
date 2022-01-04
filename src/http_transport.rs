@@ -1,51 +1,28 @@
-#![feature(async_closure)]
-
 use tokio::net::TcpListener;
 use tokio::net::TcpStream;
 use std::net::SocketAddr;
 use std::convert::Infallible;
-use hyper::{Body, Request, Response, Server};
-use hyper::service::{make_service_fn, service_fn};
-use std::pin::Pin;
-use std::future::Future;
+use hyper::{Body, Request, Response};
+use crate::ice_transport::IceTransport;
 
 pub struct HttpTransport {
     pub address: String,
-    pub socket: Option<(TcpStream, SocketAddr)>
+    pub ice_provider: IceTransport
+
 }
 
 impl HttpTransport {
-    pub async fn new(addr: &str) -> Self {
+    pub async fn new(addr: &str, ice_provider: IceTransport) -> Self {
         Self {
             address: addr.to_string(),
-            socket: None
+            ice_provider: ice_provider
         }
     }
 
-    pub async fn accept(&mut self) -> () {
-        if let Ok(l) = TcpListener::bind(&self.address).await {
-            self.socket = l.accept().await.ok();
-        }
-    }
-
-    pub async fn handler(&self, _req: Request<Body>) -> Result<Response<Body>, Infallible> {
-        Ok(Response::new("Hello, World".into()))
-    }
-
-    pub async fn listen(&self, handler: &'static fn(Request<Body>)->Result<Response<Body>, Infallible>) -> () {
-        let make_svc = make_service_fn(|_conn| async {
-            // service_fn converts our function into a `Service`
-            Ok::<_, Infallible>(service_fn(|req| async {
-                handler(req)
-            }))
-        });
-        return match &self.socket {
-            Some(s) => {
-                Server::bind(&s.1).serve(make_svc);
-            },
-            _ => {
-                panic!("Failed on binding server")
-            }
+        pub async fn handler(&self, _req: Request<Body>) -> Result<Response<Body>, Infallible> {
+        match self.ice_provider.candiate() {
+            Some(c) => Ok(Response::new(c.into())),
+            None => Ok(Response::new("404".into())),
         }
     }
 }
