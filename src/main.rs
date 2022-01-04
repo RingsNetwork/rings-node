@@ -14,7 +14,7 @@ async fn main() {
     let make_svc = make_service_fn(|_conn| async {
         // service_fn converts our function into a `Service`
         Ok::<_, Infallible>(service_fn(|req| async {
-            let ice_transport = IceTransport::new();
+            let ice_transport = IceTransport::new().await;
             let http_transport = HttpTransport::new("127.0.0.1:9999", ice_transport).await;
             http_transport.handler(req).await
         }))

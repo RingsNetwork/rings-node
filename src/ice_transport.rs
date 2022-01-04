@@ -6,11 +6,11 @@ pub struct IceTransport {
 }
 
 impl IceTransport {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         unimplemented!();
     }
 
-    pub fn candiate(&self) -> Option<String> {
+    pub async fn candiate(&self) -> Option<String> {
         unimplemented!();
     }
 
