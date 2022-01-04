@@ -28,6 +28,10 @@ impl HttpTransport {
         }
     }
 
+    pub async fn handler(&self, _req: Request<Body>) -> Result<Response<Body>, Infallible> {
+        Ok(Response::new("Hello, World".into()))
+    }
+
     pub async fn listen(&self, handler: &'static fn(Request<Body>)->Result<Response<Body>, Infallible>) -> () {
         let make_svc = make_service_fn(|_conn| async {
             // service_fn converts our function into a `Service`
