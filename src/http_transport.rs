@@ -20,7 +20,7 @@ impl HttpTransport {
     }
 
     pub async fn handler(&self, _req: Request<Body>) -> Result<Response<Body>, Infallible> {
-        match self.ice_provider.candiate().await {
+        match self.ice_provider.candidate().await {
             Some(c) => Ok(Response::new(c.into())),
             None => Ok(Response::new("404".into())),
         }
