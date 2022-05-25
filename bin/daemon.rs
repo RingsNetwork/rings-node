@@ -6,7 +6,7 @@ use rings_node::{
     logger::{LogLevel, Logger},
     prelude::rings_core::{
         async_trait,
-        dht::{Did, PeerRing, Stabilization},
+        dht::{Did, PeerRing, Stabilization, TStabilize},
         ecc::SecretKey,
         message::{self, CustomMessage, Message, MessageHandler, MessageRelay},
         prelude::url,
@@ -156,7 +156,11 @@ async fn run_jobs(args: &RunArgs) -> anyhow::Result<()> {
         swarm.clone(),
         Box::new(message_callback),
     ));
-    let stabilization = Stabilization::new(dht.clone(), swarm.clone(), args.stabilize_timeout);
+    let stabilization = Arc::new(Stabilization::new(
+        dht.clone(),
+        swarm.clone(),
+        args.stabilize_timeout,
+    ));
     let http_addr = args.http_addr.clone();
     let j = tokio::spawn(futures::future::join(
         async {
@@ -168,7 +172,7 @@ async fn run_jobs(args: &RunArgs) -> anyhow::Result<()> {
             AnyhowResult::Ok(())
         },
         async {
-            run_stabilize(stabilization).await?;
+            stabilization.wait().await?;
             AnyhowResult::Ok(())
         },
     ));
