@@ -51,3 +51,6 @@ pub trait PersistenceStorageOperation {
     /// Prune database storage
     async fn prune(&self) -> Result<()>;
 }
+
+#[cfg(feature = "default")]
+pub mod redis;

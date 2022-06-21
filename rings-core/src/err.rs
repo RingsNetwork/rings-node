@@ -255,6 +255,16 @@ pub enum Error {
 
     #[error("entry not found")]
     EntryNotFound,
+
+    #[error("Redis Miss")]
+    RedisMiss,
+
+    #[error("Redis Invalid Kind")]
+    RedisInvalidKind,
+
+    #[cfg(feature = "default")]
+    #[error("Redis Error")]
+    RedisError(#[from] redis::RedisError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
